@@ -150,10 +150,21 @@ def infer_grid(img):
 
 def cut_from_rect(img, rect):
     """
-        Cuts a rectangle from an image using the top left and bottom right points.
+    Cuts a rectangle from an image using the top left and bottom right points.
     """
     return img[int(rect[0][1]):int(rect[1][1]), int(rect[0][0]):int(rect[1][0])]
 
+def centre_pad(length, size):
+    """
+    Handles centering for a given length that may be odd or even
+    """
+    if length % 2 == 0:
+        side1 = int((size - length) / 2)
+        side2 = side1
+    else:
+        side1 = int((size - length) / 2)
+        side2 = side1 + 1
+    return side1, side2
 
 def scale_and_centre(img, size, margin=0, background=0):
     """
@@ -161,31 +172,20 @@ def scale_and_centre(img, size, margin=0, background=0):
     """
     h, w = img.shape[:2]
 
-    def centre_pad(length):
-        # Handles centering for a given length that may be odd or even
-        if length % 2 == 0:
-            side1 = int((size - length) / 2)
-            side2 = side1
-        else:
-            side1 = int((size - length) / 2)
-            side2 = side1 + 1
-        return side1, side2
-
-    def scale(r, x):
-        return int(r * x)
-
     if h > w:
         t_pad = int(margin / 2)
         b_pad = t_pad
         ratio = (size - margin) / h
-        w, h = scale(ratio, w), scale(ratio, h)
-        l_pad, r_pad = centre_pad(w)
+        w = int(ratio*w)
+        h = int(ratio*h)
+        l_pad, r_pad = centre_pad(w, size)
     else:
         l_pad = int(margin / 2)
         r_pad = l_pad
         ratio = (size - margin) / w
-        w, h = scale(ratio, w), scale(ratio, h)
-        t_pad, b_pad = centre_pad(h)
+        w = int(ratio*w)
+        h = int(ratio*h)
+        t_pad, b_pad = centre_pad(h, size)
 
     img = cv2.resize(img, (w, h))
     img = cv2.copyMakeBorder(
