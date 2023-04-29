@@ -1,5 +1,5 @@
 import numpy as np
-import pickle as pk
+from keras.models import load_model
 
 import cv2
 from PIL import Image, ImageChops
@@ -11,8 +11,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Load classifier
-with open("digit_classifier.pkl", 'rb') as file:
-    clf_trained = pk.load(file)
+clf_trained = load_model("CNN_digit_model.h5")
 
 def show_digits(digits, colour=255):
     rows = []
@@ -316,8 +315,12 @@ def digit_predict(image):
     image_clean[:, 0] = 0
     image_clean[:, 27] = 0
     
+    X_image = image_clean.reshape(1, 28, 28, 1)
+    y_image_pred = clf_trained.predict(X_image)
+    y_image_pred_classes = np.argmax(y_image_pred, axis=1)[0]
+    
     # Convert to flatten vector with 0 to 255 vals and make prediction
-    return clf_trained.predict([image_clean.flatten()*255])[0]
+    return y_image_pred_classes
 
 def get_grid(image_path, display=False):
     """
